@@ -26,12 +26,12 @@ describe('levelForDistance', () => {
 })
 
 describe('bandForLevel', () => {
-  it('groups levels into colors, four at a time', () => {
-    expect([1, 2, 3, 4].map(bandForLevel)).toEqual([1, 1, 1, 1])
-    expect([5, 8].map(bandForLevel)).toEqual([2, 2])
-    expect([9, 12].map(bandForLevel)).toEqual([3, 3])
-    expect([13, 16].map(bandForLevel)).toEqual([4, 4])
-    expect([17, 20].map(bandForLevel)).toEqual([5, 5])
+  it('groups levels into uneven colors, with everything past 10 red', () => {
+    expect([1, 2].map(bandForLevel)).toEqual([1, 1])
+    expect([3, 4].map(bandForLevel)).toEqual([2, 2])
+    expect([5, 6, 7].map(bandForLevel)).toEqual([3, 3, 3])
+    expect([8, 9, 10].map(bandForLevel)).toEqual([4, 4, 4])
+    expect([11, 15, 20].map(bandForLevel)).toEqual([5, 5, 5])
   })
 
   it('covers every level with a defined band', () => {

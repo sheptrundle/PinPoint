@@ -25,11 +25,11 @@ describe('resolveClick', () => {
   })
 
   it('reports a band when the target is visible', () => {
-    // Distance 50 → level 1; distance 250 → level 3; both in the green band.
+    // Distance 50 → level 1 (green); distance 250 → level 3 (yellow-green).
     expect(resolveClick(course, { x: 850, y: 500 })).toEqual({ kind: 'band', level: 1, band: 1 })
-    expect(resolveClick(course, { x: 800, y: 750 })).toEqual({ kind: 'band', level: 3, band: 1 })
-    // Distance ≈ 985 → level 10, in the yellow band (levels 9–12).
-    expect(resolveClick(course, { x: 1700, y: 900 })).toEqual({ kind: 'band', level: 10, band: 3 })
+    expect(resolveClick(course, { x: 800, y: 750 })).toEqual({ kind: 'band', level: 3, band: 2 })
+    // Distance ≈ 985 → level 10 (orange).
+    expect(resolveClick(course, { x: 1700, y: 900 })).toEqual({ kind: 'band', level: 10, band: 4 })
   })
 
   it('reports grey when a wall blocks the view', () => {
@@ -39,6 +39,6 @@ describe('resolveClick', () => {
   it('reports a band when the sight line passes beyond the end of a wall', () => {
     // Directly above the wall; the sight line to (800, 500) clears the wall's top cap.
     // Distance is exactly 500, which falls on the level 5/6 boundary, so it gets level 5.
-    expect(resolveClick(course, { x: 500, y: 100 })).toEqual({ kind: 'band', level: 5, band: 2 })
+    expect(resolveClick(course, { x: 500, y: 100 })).toEqual({ kind: 'band', level: 5, band: 3 })
   })
 })

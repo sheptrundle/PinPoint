@@ -1,19 +1,19 @@
 /**
  * Distance feedback (DESIGN.md §3.1). A visible click reports a distance *level*
  * from 1 (closest) to MAX_LEVEL (farthest); each level is LEVEL_WIDTH board units wide.
- * Levels are grouped into color *bands* of LEVELS_PER_BAND. Tune via playtesting.
+ * Levels are grouped into color *bands* of uneven size: narrow near the target,
+ * and everything past level 10 is red. Tune via playtesting.
  */
 export const LEVEL_WIDTH = 100
 export const MAX_LEVEL = 20
-export const LEVELS_PER_BAND = 4
 
-/** Color bands, closest first: levels 1–4 are band 1, 5–8 band 2, and so on. */
+/** Color bands, closest first. Each covers levels up to and including maxLevel. */
 export const BANDS = [
-  { id: 1, name: 'Hot' },
-  { id: 2, name: 'Warm' },
-  { id: 3, name: 'Mild' },
-  { id: 4, name: 'Cool' },
-  { id: 5, name: 'Cold' },
+  { id: 1, name: 'Hot', maxLevel: 2 },
+  { id: 2, name: 'Warm', maxLevel: 4 },
+  { id: 3, name: 'Mild', maxLevel: 7 },
+  { id: 4, name: 'Cool', maxLevel: 10 },
+  { id: 5, name: 'Cold', maxLevel: MAX_LEVEL },
 ] as const
 
 export type BandId = (typeof BANDS)[number]['id']
@@ -27,5 +27,6 @@ export function levelForDistance(distance: number): number {
 }
 
 export function bandForLevel(level: number): BandId {
-  return Math.ceil(level / LEVELS_PER_BAND) as BandId
+  // The last band ends at MAX_LEVEL, so find() always succeeds for valid levels.
+  return BANDS.find((band) => level <= band.maxLevel)!.id
 }

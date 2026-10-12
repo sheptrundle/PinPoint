@@ -41,16 +41,17 @@ So each visible click says "the target is somewhere in this ring." Each click sh
 
 | Levels | Color | Distance from target center (board units; board = 1800×1000) |
 |---|---|---|
-| 1–4 | Green | ≤ 400 |
-| 5–8 | Yellow-green | 400–800 |
-| 9–12 | Yellow | 800–1200 |
-| 13–16 | Orange | 1200–1600 |
-| 17–20 | Red | > 1600 |
+| 1–2 | Green | ≤ 200 |
+| 3–4 | Yellow-green | 200–400 |
+| 5–7 | Yellow | 400–700 |
+| 8–10 | Orange | 700–1000 |
+| 11–20 | Red | > 1000 |
 
 - Each level is **100 units wide** (`LEVEL_WIDTH`), and they're linear, so "level 7" reads directly as "600–700 away". Level 20 also covers everything beyond 1900. A distance exactly on a boundary gets the closer level.
 - The level number gives precision. The color gives an at-a-glance read and the share-card emoji (§6). The number also means color is never the only signal (§3.6).
-- History: started as 5 non-linear bands (≤60 / 150 / 300 / 500 / beyond). The owner switched to 20 levels for more precise feedback.
-- **Tuning knobs:** `LEVEL_WIDTH`, `MAX_LEVEL` and `LEVELS_PER_BAND` in `src/game/bands.ts`. 100-unit rings make trilateration fairly strong, so walls and grey clicks carry most of the difficulty. Widen the levels if solves get too short. On a course this size, most visible clicks are green or yellow-green, and red only shows up across nearly the whole board.
+- Color groups are **uneven**: narrow near the target and **red for everything past level 10**, so the colors are spread across the board instead of nearly everything reading green.
+- History: started as 5 non-linear bands (≤60 / 150 / 300 / 500 / beyond). The owner switched to 20 levels for more precise feedback, first with 4 levels per color, then with uneven groups weighted toward red.
+- **Tuning knobs:** `LEVEL_WIDTH`, `MAX_LEVEL` and each band's `maxLevel` in `src/game/bands.ts`. 100-unit rings make trilateration fairly strong, so walls and grey clicks carry most of the difficulty. Widen the levels if solves get too short.
 
 ### 3.2 Line-of-sight definition — **[Proposed]**
 - LOS = the straight segment from the **click point to the target center** doesn't intersect any wall.
@@ -288,4 +289,5 @@ puzzles/      # generated daily puzzle data
 | 2026-10-12 | Thinner walls: default 8 units (~8 px on a monitor) | Owner's preference |
 | 2026-10-12 | Hosting on a Cloudflare Worker (static assets) instead of Pages | That's what the dashboard set up; Workers can host the API later too |
 | 2026-10-12 | Distance feedback refined to 20 levels of 100 units, 4 levels per color band; markers show the level number | Owner wanted more precise feedback than 1–5 |
+| 2026-10-12 | Uneven color groups: 1–2 green, 3–4 yellow-green, 5–7 yellow, 8–10 orange, 11–20 red | Spread colors across the board; red for anything far |
 | | | |
