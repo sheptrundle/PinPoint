@@ -209,7 +209,7 @@ Idea: draw courses by hand instead of (or alongside) generating them. **Very fea
 | UI | **React** | The editor has heavy UI state; most job-relevant; works naturally with SVG |
 | Board rendering | **SVG** (`viewBox="0 0 1000 1000"`) | Matches the fixed logical grid (§3.5), crisp at any size, per-element events for the editor. A Canvas layer can be added for heavy visuals (e.g. replay heatmap) if ever needed |
 | Tests | **Vitest** | Vite's test runner. Geometry/LOS correctness is critical |
-| Hosting | **Cloudflare Pages** | Free, auto-deploys from GitHub. **Workers + D1** cover the later leaderboard API |
+| Hosting | **Cloudflare Workers** (static assets) | Free, auto-deploys from GitHub. The same Worker can serve the later leaderboard API, with **D1** for storage |
 
 Alternatives considered: Next.js (heavier, easy to leak the answer to the client), Canvas-only rendering (manual scaling and hit-testing), Svelte (less job-relevant), Vercel / GitHub Pages hosting.
 
@@ -219,7 +219,9 @@ Alternatives considered: Next.js (heavier, easy to leak the answer to the client
 - Stats and streak in `localStorage` (wrapped in try/catch).
 
 ### 7.2 Hosting
-- Cloudflare Pages, connected to the GitHub repo (deploy on push to `main`). Leaderboard API later on Cloudflare Workers + D1.
+- **Live at https://pinpoint.sheptrundle.workers.dev/** (2026-10-12).
+- Deployed as a **Cloudflare Worker serving static assets** (Cloudflare's dashboard set it up as a Worker rather than a Pages project; Cloudflare now recommends Workers for new projects). Connected to the GitHub repo; builds `npm run build` → `dist/` on push to `main`. Node version is pinned by `.node-version`.
+- The leaderboard API and the "today's course" endpoint (§7.3) can later live in this same Worker, with D1 for storage.
 
 ### 7.3 Cheating & where the answer lives — **[Open]**
 - **Option A (Wordle-style, client-side):** the day's target ships to the browser. Anyone can find it in devtools, but it's simple, free, and works offline. That's fine if there's no competitive leaderboard.
@@ -283,4 +285,5 @@ puzzles/      # generated daily puzzle data
 | 2026-10-12 | Walls are thick line segments with round caps, not polygons; grazing blocks LOS | Simpler math and editor; seamless corners |
 | 2026-10-12 | Board fills the screen: 1800×1000 logical board, scaled to cover with a safe area; desktop-first | Owner's priority is monitors; no stretching or letterboxing |
 | 2026-10-12 | Thinner walls: default 8 units (~8 px on a monitor) | Owner's preference |
+| 2026-10-12 | Hosting on a Cloudflare Worker (static assets) instead of Pages | That's what the dashboard set up; Workers can host the API later too |
 | | | |

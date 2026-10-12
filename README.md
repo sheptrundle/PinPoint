@@ -1,12 +1,19 @@
 # PinPoint
 
-A daily hidden-target puzzle game for the web. Find the hidden blue circle in as few clicks as possible. Each click shows how close you are (green → red), or turns grey if a wall blocks its line of sight to the target. Everyone gets the same board each day.
+A daily hidden-target puzzle game for the web. Find the hidden blue circle 
+in as few clicks as possible. Each click shows how close you are (green → red), 
+or turns grey if a wall blocks its line of sight to the target. Everyone gets the
+same board each day.
 
-**Status:** Design phase. See [DESIGN.md](DESIGN.md) for the game design, strategy mechanics and planned architecture.
+**▶ Play it: https://pinpoint.sheptrundle.workers.dev/**
 
-## Tech stack
+**Status:** Early prototype. One test course is playable. See [DESIGN.md](DESIGN.md) for the game design, strategy mechanics and planned architecture.
 
-TypeScript · React · SVG · Vite · Vitest · Cloudflare Pages
+## Tech stack and workflow
+
+AI Assisted development using Claude Code through the CLI (in-terminal).
+
+TypeScript · React · SVG · Vite · Vitest · Cloudflare Workers
 
 ## Development
 
