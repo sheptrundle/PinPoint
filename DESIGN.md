@@ -49,7 +49,7 @@ If color is a smooth gradient of exact distance, the game breaks:
 
 - The bands are **non-linear** (narrow near the target, wide far away). Early clicks give coarse info, and the endgame needs precision.
 - The band count and widths are the **#1 tuning knob** for difficulty. They need playtesting.
-- [Open] Should the 5 bands collapse to the original 3 (green/yellow/red)? Three is simpler to read, and five gives the solver/strategy more to work with. Leaning 5, using colors that still read as a green→red scale.
+- **Decided: 5 bands** (2026-10-12). Colors still read as a green→red scale. Widths above are starting values for playtesting.
 
 ### 3.2 Line-of-sight definition — **[Proposed]**
 - LOS = the straight segment from the **click point to the target center** doesn't intersect any wall.
@@ -63,20 +63,29 @@ The target stays hidden until it's hit. (Reading the original idea literally, a 
 ### 3.4 Luck vs. skill
 The first click is mostly luck, and a lucky hole-in-one on click 1 makes daily results noisy.
 - Make the **target small enough** that a random first-click hit is rare (~0.5–1% of open area).
-- Optional: give a **free opening probe** at a fixed location (same for everyone) that doesn't count toward score. Everyone then starts with the same information, and day 1 becomes a puzzle from the start instead of a coin flip. **[Open]**
+- ~~Free opening probe~~: **Decided: no** (2026-10-12). The first click is a real, scored click. Some opening luck is an accepted part of the game.
 - Golf framing: compute a daily **par** (see §5) and score relative to it, which smooths out "hard day vs. easy day."
 
 ### 3.5 Click precision & devices
 - Use a **fixed logical coordinate system** (e.g. 1000×1000), scaled to the screen, so phone and desktop play the same board.
 - Fixed aspect ratio (square, or 4:5 for phones). No reflow of the board.
-- Touch: fingers are imprecise, so the target radius must be big enough to hit reliably (≥ ~44 CSS px on a small phone). Consider a **tap-and-hold loupe** or "drag to place, release to confirm" on mobile so mis-taps don't cost clicks.
-- [Open] Undo/confirm step? A misclick costing a point feels bad. Options: confirm button, or "click places a pin, click again on the same pin to fire."
+- **Full-screen look vs. fairness:** the UI vision (§3.7) is a canvas that fills the screen, but screens come in different shapes, and a board that stretched to fit would differ per device. Resolution: the **play area keeps a fixed aspect ratio**, scaled as large as fits. The leftover margin uses the same blank background with no border, so it still *looks* full-screen. Clicks in the margin are ignored. **[Proposed]**
+- Touch: fingers are imprecise, so the target radius must be big enough to hit reliably (≥ ~44 CSS px on a small phone).
+- **Decided: no misclick protection.** Every tap counts, with no confirm or undo step (2026-10-12).
+- **Decided: no click cap** for now. The game continues until the target is found (2026-10-12). May revisit.
 
 ### 3.6 Accessibility (important for green/yellow/red)
 About 8% of men have red-green color vision deficiency, and the core mechanic is a red→green scale. Plan for this from day one:
 - **Colorblind palette** toggle (e.g. blue→orange scale, or a viridis-like ramp).
 - **Redundant encoding**: every marker also shows a number or pip count (1–5) or a ring count, so color is never the only signal.
 - Grey "no LOS" markers get a **distinct shape** (hollow / ✕), not just a color.
+
+### 3.7 Screen layout & flow — **Decided: minimal flat**
+- The **blank canvas fills the screen** (see the aspect-ratio note in §3.5). No persistent chrome on the board itself; maybe a tiny unobtrusive corner icon for help/settings and the click counter.
+- **Start popup**: a small card centered over the canvas with the title, puzzle #, a one-line how-to, and a **Start** button. The board is visible but dimmed/blurred behind it.
+- **Win popup**: the same card returns after the hit, showing score vs. par, stats/streak/distribution, the **Share** button, the replay (§4), and a countdown to the next puzzle.
+- Returning after already playing today skips straight to the win popup (with today's board and markers shown behind it).
+- Visual language: flat colors, no gradients/shadows on the board, one font, lots of whitespace.
 
 ---
 
@@ -86,7 +95,7 @@ Ranked roughly by value vs. complexity.
 
 ### Tier 1 — strongly recommended for v1
 1. **Discrete bands** (§3.1). Without this there isn't much strategy.
-2. **Persistent markers + optional ring overlay.** Draw the band ring around each colored click and the shadow region for each grey click. Make it toggleable: "Assist" (overlays on) vs. "Hard mode" (dots only, keep it in your head). Hard mode results get a ⭐ on the share card.
+2. **Persistent markers.** Every click leaves its colored/grey dot on the board. **Decided: no ring/shadow overlays to start** (2026-10-12). Players picture the rings and shadows themselves. An optional assist overlay could be revisited later (it would then need a share-card marker to keep scores comparable).
 3. **Daily par + golf scoring.** "PinPoint" already sounds like golf. Birdie / Eagle / Bogey labels give more satisfying feedback than a raw number.
 4. **Post-game replay.** After solving, show how the **feasible region** (where the target could still be) shrank with each click, next to the solver's optimal line. This is the main way players learn strategy, and it's what keeps a daily game interesting past week 2.
 
@@ -112,8 +121,8 @@ Ranked roughly by value vs. complexity.
 ## 5. Puzzle Generation & the Solver
 
 ### 5.1 Daily determinism
-- Puzzle number = days since launch date. Everyone with the same local date gets the same puzzle (Wordle uses the local calendar date; UTC is the alternative). **[Open: local vs. UTC]**
-- Puzzles are pure data: `{ id, walls: Polygon[], target: {x, y, r}, bands, par, freeProbe? }`.
+- Puzzle number = days since launch date. Everyone with the same local date gets the same puzzle (Wordle uses the local calendar date). **Decided: local date** (2026-10-12). Leaderboards then need to be keyed by puzzle # (not by a UTC day), and the server should accept a puzzle only within ±1 day of its date to allow for time zones.
+- Puzzles are pure data: `{ id, walls: Polygon[], target: {x, y, r}, bands, par }`.
 
 ### 5.2 Generation approach — **[Proposed: offline generate → validate → curate]**
 | Approach | Pros | Cons |
@@ -133,7 +142,35 @@ Pipeline: generate candidate boards from archetype templates → place the targe
   - **Difficulty rating** for scheduling the week.
   - **Post-game replay** ("the optimal player would have clicked here").
   - **Hint system** (optional): highlight the feasible region.
+  - **Course editor validation** (§5.5): report par and flag bad designs while you draw.
 - LOS with precomputed **visibility polygons** per click keeps this fast (standard computational geometry, which libraries handle).
+
+### 5.4 Target size — **Decided: constant** (2026-10-12)
+The target radius is the same every day for now. Difficulty comes from wall layout (and par absorbs it).
+
+### 5.5 Hand-drawn courses / course editor — **[Proposed]**
+Idea: draw courses by hand instead of (or alongside) generating them. **Very feasible.** There are two ways to do it, and they can coexist:
+
+**A. Draw in any paint app → import an image** (fastest way to start authoring)
+- Draw on a fixed-size canvas (e.g. 1000×1000) in Paint / Procreate / Figma: **black = wall, white = open**, optionally a **blue dot = target**.
+- An import script converts it to course data. Two options:
+  - *Bitmap walls*: keep the walls as a pixel grid and check LOS by stepping along the line pixel by pixel. Dead simple, and any shape works (curves, blobs, handwriting).
+  - *Traced polygons*: trace wall outlines into polygons (marching squares + simplification). Crisp at any screen size, and it matches the vector geometry everywhere else.
+- Recommendation: trace to polygons, so there's **one** wall format in the game. Bitmap is the fallback if tracing gets fiddly.
+- This is effectively an internal tool. It's great for seeding the first few dozen dailies with hand-designed courses.
+
+**B. Built-in course editor (in the web app)**
+- Tools: rectangle wall, thick line wall, polygon/freehand wall, eraser, place target. Snap to grid optional.
+- **Live solver feedback** while drawing: par, difficulty, the "first-click hit chance", and warnings (target unreachable/enclosed, map trivially open).
+- **Test-play** button.
+- Effort: moderate. It's a second app mode on the same geometry and render code, which is a strong portfolio piece.
+
+**What it unlocks**
+- **Curated dailies**: hand-made courses go into the daily rotation (with solver-assigned par).
+- **Challenge a friend**: encode a custom course into a share link. Unranked: the target is in the link, so it's honor-system, which is fine for friends.
+- **Community courses** (much later): a public gallery with moderation, ratings and per-course leaderboards. It needs accounts and moderation, so it isn't v1.
+
+**Suggested order:** daily game first (using a few hand-drawn courses via **A**) → editor **B** → friend-challenge links → community courses.
 
 ---
 
@@ -141,7 +178,7 @@ Pipeline: generate candidate boards from archetype templates → place the targe
 
 - **Share card** (spoiler-free, emoji sequence):
   ```
-  PinPoint #42 ⛳ 5 (par 6) ⭐
+  PinPoint #42 ⛳ 5 (par 6)
   🟥⬜🟨🟩🔵
   ```
   Uses ⬜ for grey (no LOS), colored squares per band, and 🔵 for the hit. Shows the shape of the solve without giving away the location.
@@ -181,6 +218,7 @@ src/
 tools/
   generator/  # offline board generation
   solver/     # feasible-set solver, par calculation
+  importer/   # image (PNG) → course polygons (§5.5 A)
 puzzles/      # generated daily puzzle data
 ```
 
@@ -188,15 +226,16 @@ puzzles/      # generated daily puzzle data
 
 ## 8. Open Questions (to resolve together)
 
-1. 3 bands or 5 bands? What widths?
-2. Free opening probe: yes/no?
-3. Misclick protection: confirm step, or every tap counts?
-4. Click cap (e.g. fail after 15), or unlimited?
-5. Ring/shadow overlays on by default (assist) or off by default?
-6. Local date or UTC for the daily rollover?
-7. ~~Leaderboards eventually?~~ Yes, see Decision Log. Remaining: anonymous vs. account-based identity, and global vs. friends-only boards.
-8. Visual theme: minimal/flat (Wordle-like), sonar/radar, or golf course?
-9. Should the target size vary by day/difficulty, or stay constant?
+1. ~~3 or 5 bands?~~ **5.** Widths still TBD via playtesting.
+2. ~~Free opening probe?~~ **No**, the first click is real.
+3. ~~Misclick protection?~~ **None**, every tap counts.
+4. ~~Click cap?~~ **None** for now.
+5. ~~Overlays?~~ **None** to start.
+6. ~~Local or UTC?~~ **Local date.**
+7. ~~Leaderboards eventually?~~ **Yes.** Anonymous device ID first, optional accounts later (§7.3).
+8. ~~Visual theme?~~ **Minimal flat**, full-screen canvas + popup cards (§3.7).
+9. ~~Target size?~~ **Constant** for now.
+10. Course editor: start with image import (A), the in-app editor (B), or both? (§5.5)
 
 ---
 
@@ -208,4 +247,14 @@ puzzles/      # generated daily puzzle data
 | 2026-10-12 | Adopt all of §3–§6 recommendations as the working baseline (discrete bands, par/golf scoring, solver, replay, accessibility, share card) | Approved in review; specifics still subject to §8 |
 | 2026-10-12 | **Leaderboards + score sharing are goals** → server-validated click resolution (§7.3 option B) is the target architecture | Client-side targets can't support a fair leaderboard |
 | 2026-10-12 | GitHub repo **public** for now (portfolio visibility); may go private later | Recruiter visibility. Implies puzzle answers stay out of the repo (§7.3) |
+| 2026-10-12 | 5 distance bands | More strategic depth than 3 |
+| 2026-10-12 | No misclick protection; every tap counts | Simplicity, and it raises the stakes |
+| 2026-10-12 | No click cap (for now) | Revisit after playtesting |
+| 2026-10-12 | Daily rollover on the player's local date | Wordle convention; leaderboards keyed by puzzle # |
+| 2026-10-12 | Minimal flat UI: full-screen canvas, start/win popup card | Owner's vision |
+| 2026-10-12 | Constant target size | Keep scores comparable; difficulty via walls |
+| 2026-10-12 | Hand-drawn courses are in scope (§5.5) | Owner's idea; feasible, and good for curation |
+| 2026-10-12 | No free opening probe; first click is scored | Opening luck is accepted |
+| 2026-10-12 | No ring/shadow overlays to start | Keep the deduction in the player's head |
+| 2026-10-12 | Leaderboard identity: anonymous device ID first, optional accounts later | Per §7.3 |
 | | | |
