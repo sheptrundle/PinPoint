@@ -94,6 +94,7 @@ About 8% of men have red-green color vision deficiency, and the core mechanic is
 - **Win popup**: the same card returns after the hit, showing score vs. par, stats/streak/distribution, the **Share** button, the replay (§4), and a countdown to the next puzzle.
 - Returning after already playing today skips straight to the win popup (with today's board and markers shown behind it).
 - Visual language: flat colors, no gradients/shadows on the board, one font, lots of whitespace.
+- **Clicking an existing pin does nothing** except give that pin a small bounce. It's not counted and no new pin is dropped (2026-10-12). The whole pin area is covered, including the hollow middle of grey pins. Side effect: a pin that partly overlaps the hidden target covers that sliver of it, but the rest of the target is still clickable.
 
 ---
 
@@ -290,4 +291,5 @@ puzzles/      # generated daily puzzle data
 | 2026-10-12 | Hosting on a Cloudflare Worker (static assets) instead of Pages | That's what the dashboard set up; Workers can host the API later too |
 | 2026-10-12 | Distance feedback refined to 20 levels of 100 units, 4 levels per color band; markers show the level number | Owner wanted more precise feedback than 1–5 |
 | 2026-10-12 | Uneven color groups: 1–2 green, 3–4 yellow-green, 5–7 yellow, 8–10 orange, 11–20 red | Spread colors across the board; red for anything far |
+| 2026-10-12 | Clicking an existing pin bounces it and doesn't count | Prevents wasted duplicate clicks |
 | | | |

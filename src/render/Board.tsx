@@ -1,4 +1,4 @@
-import type { MouseEvent } from 'react'
+import { useState, type MouseEvent } from 'react'
 import type { Course } from '../game/course'
 import type { CountedClick } from '../game/game'
 import { BOARD_HEIGHT, BOARD_WIDTH } from '../game/board'
@@ -17,6 +17,9 @@ interface BoardProps {
 }
 
 export function Board({ course, clicks, revealTarget, rejected, onBoardClick }: BoardProps) {
+  // Which pin is bouncing; the key changes on every click so the bounce replays.
+  const [bounce, setBounce] = useState<{ index: number; key: number } | null>(null)
+
   function handleClick(e: MouseEvent<SVGSVGElement>) {
     // Convert screen pixels to board units, accounting for scaling and cropping.
     const ctm = e.currentTarget.getScreenCTM()
@@ -34,7 +37,6 @@ export function Board({ course, clicks, revealTarget, rejected, onBoardClick }: 
       preserveAspectRatio="xMidYMid slice"
       onClick={handleClick}
     >
-
       {course.walls.map((wall, i) => (
         // A round-capped stroke is exactly the wall's capsule shape.
         <line
@@ -59,7 +61,12 @@ export function Board({ course, clicks, revealTarget, rejected, onBoardClick }: 
       )}
 
       {clicks.map((click, i) => (
-        <Marker key={i} click={click} />
+        <Marker
+          key={i}
+          click={click}
+          bounceKey={bounce?.index === i ? bounce.key : undefined}
+          onClick={() => setBounce({ index: i, key: Date.now() })}
+        />
       ))}
 
       {rejected && (
@@ -71,22 +78,39 @@ export function Board({ course, clicks, revealTarget, rejected, onBoardClick }: 
   )
 }
 
-function Marker({ click }: { click: CountedClick }) {
+interface MarkerProps {
+  click: CountedClick
+  /** Set while this pin should bounce; a new value replays the bounce. */
+  bounceKey: number | undefined
+  onClick: () => void
+}
+
+function Marker({ click, bounceKey, onClick }: MarkerProps) {
   const { point, result } = click
+
+  function handleClick(e: MouseEvent<SVGGElement>) {
+    // Clicking an existing pin never reaches the board, so it doesn't count as a click.
+    e.stopPropagation()
+    onClick()
+  }
+
   return (
     // Position on the outer group; the inner group animates around its own center.
-    <g transform={`translate(${point.x} ${point.y})`}>
-      <MarkerShape result={result} />
+    // Changing the inner key remounts it, which restarts the bounce animation.
+    <g transform={`translate(${point.x} ${point.y})`} onClick={handleClick}>
+      <MarkerShape key={bounceKey ?? 'idle'} result={result} bouncing={bounceKey !== undefined} />
     </g>
   )
 }
 
-function MarkerShape({ result }: { result: CountedClick['result'] }) {
+function MarkerShape({ result, bouncing }: { result: CountedClick['result']; bouncing: boolean }) {
+  const cls = (variant: string) => `marker ${variant}${bouncing ? ' bouncing' : ''}`
+
   if (result.kind === 'grey') {
     // Distinct shape (hollow with a cross), not just a color.
     const d = MARKER_RADIUS * 0.5
     return (
-      <g className="marker marker-grey">
+      <g className={cls('marker-grey')}>
         <circle r={MARKER_RADIUS} />
         <path d={`M ${-d} ${-d} L ${d} ${d} M ${d} ${-d} L ${-d} ${d}`} />
       </g>
@@ -95,7 +119,7 @@ function MarkerShape({ result }: { result: CountedClick['result'] }) {
 
   if (result.kind === 'hit') {
     return (
-      <g className="marker marker-hit">
+      <g className={cls('marker-hit')}>
         <circle r={MARKER_RADIUS} />
       </g>
     )
@@ -104,7 +128,7 @@ function MarkerShape({ result }: { result: CountedClick['result'] }) {
   // Color shows the band; the distance level (1–20) is shown inside the dot,
   // which is more precise and means color is never the only signal.
   return (
-    <g className={`marker marker-band band-${result.band}`}>
+    <g className={cls(`marker-band band-${result.band}`)}>
       <circle r={MARKER_RADIUS} />
       <text dy="0.35em">{result.level}</text>
     </g>

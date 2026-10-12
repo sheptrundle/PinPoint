@@ -113,6 +113,13 @@ body,
 .marker circle {
   stroke: var(--bg);
   stroke-width: 3;
+  /* The whole pin is clickable, including the hollow middle of grey pins. */
+  pointer-events: all;
+}
+
+/* Clicking an existing pin gives it a small bulge instead of counting a click. */
+.marker.bouncing {
+  animation: bounce 260ms ease-out;
 }
 
 .marker text {
@@ -189,6 +196,12 @@ body,
   }
 }
 
+@keyframes bounce {
+  40% {
+    scale: 1.3;
+  }
+}
+
 @keyframes fade-out {
   to {
     opacity: 0;
@@ -204,6 +217,7 @@ body,
 
 @media (prefers-reduced-motion: reduce) {
   .marker,
+  .marker.bouncing,
   .target {
     animation: none;
   }
