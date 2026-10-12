@@ -6,7 +6,6 @@
   --card-border: #e7e5e4;
   --accent: #2563eb;
   --accent-ink: #ffffff;
-  --board: #ffffff;
   --wall: #44403c;
   --grey-marker: #a8a29e;
   --marker-ink: #ffffff;
@@ -30,7 +29,6 @@
     --muted: #a8a29e;
     --card: #292524;
     --card-border: #44403c;
-    --board: #232020;
     --wall: #d6d3d1;
     --grey-marker: #78716c;
   }
@@ -49,7 +47,7 @@ body,
   background: var(--bg);
 }
 
-/* The board fills the screen; the SVG's viewBox keeps the play area square and centered. */
+/* The board covers the whole window; the SVG's viewBox handles scaling. */
 .board {
   display: block;
   width: 100vw;
@@ -96,11 +94,6 @@ body,
   font: inherit;
   font-weight: 600;
   cursor: pointer;
-}
-
-/* Faint fill so players can see where the playable square ends. */
-.board-area {
-  fill: var(--board);
 }
 
 .wall {

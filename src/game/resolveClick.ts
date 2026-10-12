@@ -1,4 +1,5 @@
-import { distance, isInsideBoard, type Vec } from '../geometry/vec'
+import { distance, type Vec } from '../geometry/vec'
+import { isInsideBoard } from './board'
 import { bandForDistance, type BandId } from './bands'
 import { hasLineOfSight, isPointInAnyWall, type Course } from './course'
 

@@ -12,6 +12,7 @@ describe('resolveClick', () => {
   it('rejects clicks outside the board', () => {
     expect(resolveClick(course, { x: -1, y: 500 })).toEqual({ kind: 'invalid', reason: 'outside' })
     expect(resolveClick(course, { x: 500, y: 1001 })).toEqual({ kind: 'invalid', reason: 'outside' })
+    expect(resolveClick(course, { x: 1801, y: 500 })).toEqual({ kind: 'invalid', reason: 'outside' })
   })
 
   it('rejects clicks inside a wall', () => {

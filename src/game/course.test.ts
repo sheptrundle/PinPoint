@@ -62,9 +62,12 @@ describe('validateCourse', () => {
     expect(validateCourse(course)).toContain('Wall 0 overlaps the target.')
   })
 
-  it('rejects a target past the board edge', () => {
-    const course = { ...valid, target: { center: { x: 980, y: 500 }, radius: 40 } }
-    expect(validateCourse(course)).toContain('Target must lie fully inside the board.')
+  it('rejects a target outside the safe area', () => {
+    const offEdge = { ...valid, target: { center: { x: 1780, y: 500 }, radius: 40 } }
+    expect(validateCourse(offEdge)).toContain('Target must lie fully inside the safe area.')
+    // On the board, but close enough to the top edge that it could be cropped off.
+    const nearEdge = { ...valid, target: { center: { x: 800, y: 80 }, radius: 40 } }
+    expect(validateCourse(nearEdge)).toContain('Target must lie fully inside the safe area.')
   })
 
   it('rejects non-positive sizes', () => {

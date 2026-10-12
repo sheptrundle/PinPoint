@@ -71,9 +71,11 @@ The first click is mostly luck, and a lucky hole-in-one on click 1 makes daily r
 - Golf framing: compute a daily **par** (see §5) and score relative to it, which smooths out "hard day vs. easy day."
 
 ### 3.5 Click precision & devices
-- Use a **fixed logical coordinate system** (e.g. 1000×1000), scaled to the screen, so phone and desktop play the same board.
-- Fixed aspect ratio (square, or 4:5 for phones). No reflow of the board.
-- **Full-screen look vs. fairness:** the UI vision (§3.7) is a canvas that fills the screen, but screens come in different shapes, and a board that stretched to fit would differ per device. Resolution: the **play area keeps a fixed aspect ratio**, scaled as large as fits. The leftover margin uses the same blank background with no border, so it still *looks* full-screen. Clicks in the margin are ignored. **[Proposed]**
+- **Decided: desktop-first, the board fills the screen** (2026-10-12). Mobile is a later concern.
+- **Fixed logical board of 1800×1000** (1.8 : 1, roughly a maximized browser window on a monitor). All game logic uses these units.
+- The board is scaled uniformly to **cover** the window (SVG `preserveAspectRatio="xMidYMid slice"`). There's no stretching and no letterbox bars. If the window isn't exactly 1.8 : 1, a little of the board's edge is cropped.
+- **Safe area** `x 100–1700, y 75–925` is always visible for window shapes from about 1.6 : 1 to 2.1 : 1 (laptops through wide monitors). The **target must be inside the safe area** (enforced by validation). Walls may run past it to the edge.
+- Fairness trade-off: players with unusual window shapes see slightly more or less of the empty edges, but every player can see the target's area and the same walls that matter. That's acceptable for a desktop-first launch. Revisit for mobile (portrait phones would crop heavily, so they'll need their own layout).
 - Touch: fingers are imprecise, so the target radius must be big enough to hit reliably (≥ ~44 CSS px on a small phone).
 - **Decided: no misclick protection.** Every tap counts, with no confirm or undo step (2026-10-12).
 - **Decided: no click cap** for now. The game continues until the target is found (2026-10-12). May revisit.
@@ -279,4 +281,6 @@ puzzles/      # generated daily puzzle data
 | 2026-10-12 | Course authoring via in-app editor (B); image import shelved | Owner's choice; doubles as the daily authoring tool |
 | 2026-10-12 | Stack: Vite + TypeScript + React + SVG, Vitest, Cloudflare Pages (Workers + D1 later) | See §7.1 |
 | 2026-10-12 | Walls are thick line segments with round caps, not polygons; grazing blocks LOS | Simpler math and editor; seamless corners |
+| 2026-10-12 | Board fills the screen: 1800×1000 logical board, scaled to cover with a safe area; desktop-first | Owner's priority is monitors; no stretching or letterboxing |
+| 2026-10-12 | Thinner walls: default 8 units (~8 px on a monitor) | Owner's preference |
 | | | |

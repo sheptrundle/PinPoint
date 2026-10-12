@@ -1,5 +1,6 @@
 import { pointToSegmentDistance, segmentToSegmentDistance, type Segment } from '../geometry/segment'
-import { BOARD_SIZE, type Vec } from '../geometry/vec'
+import type { Vec } from '../geometry/vec'
+import { SAFE_AREA } from './board'
 
 /**
  * A wall is a straight line with a thickness and round end caps (a "capsule").
@@ -23,6 +24,9 @@ export interface Course {
 
 /** Constant target size for every course (DESIGN.md §5.4). Tune via playtesting. */
 export const TARGET_RADIUS = 40
+
+/** Default wall thickness in board units (about 8 px on a typical monitor). */
+export const WALL_THICKNESS = 8
 
 /** Tolerance for floating-point comparisons, so exact grazes count as touching. */
 const EPSILON = 1e-9
@@ -52,12 +56,12 @@ export function validateCourse(course: Course): string[] {
 
   if (!(radius > 0)) errors.push('Target radius must be positive.')
   if (
-    center.x - radius < 0 ||
-    center.x + radius > BOARD_SIZE ||
-    center.y - radius < 0 ||
-    center.y + radius > BOARD_SIZE
+    center.x - radius < SAFE_AREA.minX ||
+    center.x + radius > SAFE_AREA.maxX ||
+    center.y - radius < SAFE_AREA.minY ||
+    center.y + radius > SAFE_AREA.maxY
   ) {
-    errors.push('Target must lie fully inside the board.')
+    errors.push('Target must lie fully inside the safe area.')
   }
 
   course.walls.forEach((wall, i) => {

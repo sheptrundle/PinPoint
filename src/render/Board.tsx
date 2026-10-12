@@ -1,7 +1,8 @@
 import type { MouseEvent } from 'react'
 import type { Course } from '../game/course'
 import type { CountedClick } from '../game/game'
-import { BOARD_SIZE, type Vec } from '../geometry/vec'
+import { BOARD_HEIGHT, BOARD_WIDTH } from '../game/board'
+import type { Vec } from '../geometry/vec'
 
 /** Marker radius in board units. */
 const MARKER_RADIUS = 16
@@ -17,7 +18,7 @@ interface BoardProps {
 
 export function Board({ course, clicks, revealTarget, rejected, onBoardClick }: BoardProps) {
   function handleClick(e: MouseEvent<SVGSVGElement>) {
-    // Convert screen pixels to board units, accounting for scaling and letterboxing.
+    // Convert screen pixels to board units, accounting for scaling and cropping.
     const ctm = e.currentTarget.getScreenCTM()
     if (!ctm) return
     const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse())
@@ -27,11 +28,12 @@ export function Board({ course, clicks, revealTarget, rejected, onBoardClick }: 
   return (
     <svg
       className="board"
-      viewBox={`0 0 ${BOARD_SIZE} ${BOARD_SIZE}`}
-      preserveAspectRatio="xMidYMid meet"
+      viewBox={`0 0 ${BOARD_WIDTH} ${BOARD_HEIGHT}`}
+      // "slice" covers the whole window without stretching, cropping a little of the
+      // board's edges if the window isn't 1.8 : 1 (see SAFE_AREA).
+      preserveAspectRatio="xMidYMid slice"
       onClick={handleClick}
     >
-      <rect className="board-area" width={BOARD_SIZE} height={BOARD_SIZE} />
 
       {course.walls.map((wall, i) => (
         // A round-capped stroke is exactly the wall's capsule shape.

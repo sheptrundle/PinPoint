@@ -1,4 +1,6 @@
-import { TARGET_RADIUS, type Course } from '../game/course'
+import { TARGET_RADIUS, WALL_THICKNESS, type Course } from '../game/course'
+
+const T = WALL_THICKNESS
 
 /**
  * Hard-coded course for development and playtesting until the editor exists.
@@ -7,17 +9,17 @@ import { TARGET_RADIUS, type Course } from '../game/course'
 export const testCourse: Course = {
   walls: [
     // L-shaped wall on the left
-    { a: { x: 250, y: 150 }, b: { x: 250, y: 550 }, thickness: 20 },
-    { a: { x: 250, y: 550 }, b: { x: 500, y: 550 }, thickness: 20 },
+    { a: { x: 450, y: 150 }, b: { x: 450, y: 550 }, thickness: T },
+    { a: { x: 450, y: 550 }, b: { x: 900, y: 550 }, thickness: T },
     // Corner pocket on the upper right
-    { a: { x: 650, y: 100 }, b: { x: 650, y: 400 }, thickness: 20 },
-    { a: { x: 650, y: 400 }, b: { x: 850, y: 400 }, thickness: 20 },
+    { a: { x: 1170, y: 100 }, b: { x: 1170, y: 400 }, thickness: T },
+    { a: { x: 1170, y: 400 }, b: { x: 1530, y: 400 }, thickness: T },
     // Low wall with a short return along the bottom
-    { a: { x: 450, y: 750 }, b: { x: 800, y: 750 }, thickness: 20 },
-    { a: { x: 800, y: 750 }, b: { x: 800, y: 900 }, thickness: 20 },
+    { a: { x: 810, y: 750 }, b: { x: 1440, y: 750 }, thickness: T },
+    { a: { x: 1440, y: 750 }, b: { x: 1440, y: 900 }, thickness: T },
     // Pillars
-    { a: { x: 120, y: 800 }, b: { x: 200, y: 800 }, thickness: 30 },
-    { a: { x: 500, y: 300 }, b: { x: 500, y: 320 }, thickness: 40 },
+    { a: { x: 220, y: 800 }, b: { x: 360, y: 800 }, thickness: 16 },
+    { a: { x: 900, y: 290 }, b: { x: 900, y: 330 }, thickness: 16 },
   ],
-  target: { center: { x: 760, y: 250 }, radius: TARGET_RADIUS },
+  target: { center: { x: 1370, y: 250 }, radius: TARGET_RADIUS },
 }
