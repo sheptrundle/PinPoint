@@ -193,16 +193,27 @@ Idea: draw courses by hand instead of (or alongside) generating them. **Very fea
 
 ---
 
-## 7. Technical Architecture (initial thoughts)
+## 7. Technical Architecture
 
-### 7.1 Front end — **[Proposed]**
-- **Vite + TypeScript**, no heavy framework needed for the board. A small amount of UI (modals, stats) can be plain TS or Preact/React.
-- Render the board with **SVG** (crisp at any scale, easy hit-testing, simple to animate markers) or **Canvas** (if overlays get heavy). SVG to start.
-- Geometry: segment–polygon intersection for LOS. Visibility polygons for overlays and the solver.
+### 7.1 Stack — **Decided** (2026-10-12)
+| Layer | Choice | Why |
+|---|---|---|
+| Language | **TypeScript** | Owner's preference; type safety for geometry code |
+| Build tool | **Vite** | Instant dev reload, simple production builds, TS out of the box |
+| UI | **React** | The editor has heavy UI state; most job-relevant; works naturally with SVG |
+| Board rendering | **SVG** (`viewBox="0 0 1000 1000"`) | Matches the fixed logical grid (§3.5), crisp at any size, per-element events for the editor. A Canvas layer can be added for heavy visuals (e.g. replay heatmap) if ever needed |
+| Tests | **Vitest** | Vite's test runner. Geometry/LOS correctness is critical |
+| Hosting | **Cloudflare Pages** | Free, auto-deploys from GitHub. **Workers + D1** cover the later leaderboard API |
+
+Alternatives considered: Next.js (heavier, easy to leak the answer to the client), Canvas-only rendering (manual scaling and hit-testing), Svelte (less job-relevant), Vercel / GitHub Pages hosting.
+
+**Core rule:** game logic (geometry, LOS, `resolveClick`, scoring) is **plain TypeScript with no React/DOM imports**, so the same code runs in the browser, the editor, the solver and, later, the server.
+
+- Geometry: segment–polygon intersection for LOS. Visibility polygons for the solver.
 - Stats and streak in `localStorage` (wrapped in try/catch).
 
 ### 7.2 Hosting
-- Static hosting: Cloudflare Pages / Vercel / Netlify / GitHub Pages. Free tier is fine.
+- Cloudflare Pages, connected to the GitHub repo (deploy on push to `main`). Leaderboard API later on Cloudflare Workers + D1.
 
 ### 7.3 Cheating & where the answer lives — **[Open]**
 - **Option A (Wordle-style, client-side):** the day's target ships to the browser. Anyone can find it in devtools, but it's simple, free, and works offline. That's fine if there's no competitive leaderboard.
@@ -262,4 +273,5 @@ puzzles/      # generated daily puzzle data
 | 2026-10-12 | No ring/shadow overlays to start | Keep the deduction in the player's head |
 | 2026-10-12 | Leaderboard identity: anonymous device ID first, optional accounts later | Per §7.3 |
 | 2026-10-12 | Course authoring via in-app editor (B); image import shelved | Owner's choice; doubles as the daily authoring tool |
+| 2026-10-12 | Stack: Vite + TypeScript + React + SVG, Vitest, Cloudflare Pages (Workers + D1 later) | See §7.1 |
 | | | |
