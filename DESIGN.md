@@ -54,8 +54,12 @@ If color is a smooth gradient of exact distance, the game breaks:
 ### 3.2 Line-of-sight definition — **[Proposed]**
 - LOS = the straight segment from the **click point to the target center** doesn't intersect any wall.
 - Using the target *center* (not "any part of the circle") keeps the shadow edges crisp and deducible.
-- Walls are polygons (mostly thick line segments/rectangles). Clicks inside walls are rejected and **don't count**.
-- Board edges count as walls.
+- **Decided: walls are straight lines with a thickness** (2026-10-12), not general polygons. A wall is `{ a, b, thickness }` with **round end caps** (a "capsule"). Connected walls form seamless corners, and the math is just "distance from a point/segment to the wall's center line ≤ thickness/2". The editor draws walls as lines, and curves are approximated by chains of short walls.
+- **Grazing counts as blocked:** if the sight line touches a wall (including its rounded end), there's no LOS.
+- Clicks inside or on the edge of a wall are rejected and **don't count**. Clicks outside the board (in the letterbox margin) are ignored.
+- A click exactly on a band boundary gets the **closer** band.
+- The target may not overlap any wall or extend past the board edge (enforced by course validation).
+- Board edges count as walls. Since the board is a convex square, they never actually block a sight line between two in-board points.
 
 ### 3.3 Is the target visible? — **[Proposed: hidden]**
 The target stays hidden until it's hit. (Reading the original idea literally, a *visible* circle would make the game trivial, so hidden is assumed.)
@@ -122,7 +126,7 @@ Ranked roughly by value vs. complexity.
 
 ### 5.1 Daily determinism
 - Puzzle number = days since launch date. Everyone with the same local date gets the same puzzle (Wordle uses the local calendar date). **Decided: local date** (2026-10-12). Leaderboards then need to be keyed by puzzle # (not by a UTC day), and the server should accept a puzzle only within ±1 day of its date to allow for time zones.
-- Puzzles are pure data: `{ id, walls: Polygon[], target: {x, y, r}, bands, par }`.
+- Puzzles are pure data: `{ id, walls: { a, b, thickness }[], target: { center, radius }, par }`.
 
 ### 5.2 Generation approach — **[Proposed: offline generate → validate → curate]**
 | Approach | Pros | Cons |
@@ -160,7 +164,7 @@ Idea: draw courses by hand instead of (or alongside) generating them. **Very fea
 - This is effectively an internal tool. It's great for seeding the first few dozen dailies with hand-designed courses.
 
 **B. Built-in course editor (in the web app)**
-- Tools: rectangle wall, thick line wall, polygon/freehand wall, eraser, place target. Snap to grid optional.
+- Tools: draw wall (click-drag a line; set thickness), chain walls (polyline: each click continues from the last endpoint), select/move/delete, place target. Snap to grid and to existing wall endpoints.
 - **Live solver feedback** while drawing: par, difficulty, the "first-click hit chance", and warnings (target unreachable/enclosed, map trivially open).
 - **Test-play** button.
 - Effort: moderate. It's a second app mode on the same geometry and render code, which is a strong portfolio piece.
@@ -209,7 +213,7 @@ Alternatives considered: Next.js (heavier, easy to leak the answer to the client
 
 **Core rule:** game logic (geometry, LOS, `resolveClick`, scoring) is **plain TypeScript with no React/DOM imports**, so the same code runs in the browser, the editor, the solver and, later, the server.
 
-- Geometry: segment–polygon intersection for LOS. Visibility polygons for the solver.
+- Geometry: segment-to-segment distance for LOS against capsule walls. Visibility regions for the solver.
 - Stats and streak in `localStorage` (wrapped in try/catch).
 
 ### 7.2 Hosting
@@ -225,7 +229,7 @@ Alternatives considered: Next.js (heavier, easy to leak the answer to the client
 ### 7.4 Suggested module layout (when we build)
 ```
 src/
-  geometry/   # points, segments, polygons, LOS, visibility polygons
+  geometry/   # points, segments, distances, intersection
   game/       # puzzle model, click resolution, scoring, state machine
   render/     # SVG board, markers, overlays, animations
   ui/         # header, modals (help, stats, share), settings
@@ -274,4 +278,5 @@ puzzles/      # generated daily puzzle data
 | 2026-10-12 | Leaderboard identity: anonymous device ID first, optional accounts later | Per §7.3 |
 | 2026-10-12 | Course authoring via in-app editor (B); image import shelved | Owner's choice; doubles as the daily authoring tool |
 | 2026-10-12 | Stack: Vite + TypeScript + React + SVG, Vitest, Cloudflare Pages (Workers + D1 later) | See §7.1 |
+| 2026-10-12 | Walls are thick line segments with round caps, not polygons; grazing blocks LOS | Simpler math and editor; seamless corners |
 | | | |
