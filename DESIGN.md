@@ -148,7 +148,7 @@ Pipeline: generate candidate boards from archetype templates → place the targe
 ### 5.4 Target size — **Decided: constant** (2026-10-12)
 The target radius is the same every day for now. Difficulty comes from wall layout (and par absorbs it).
 
-### 5.5 Hand-drawn courses / course editor — **[Proposed]**
+### 5.5 Hand-drawn courses / course editor — **Decided: B, in-app editor** (2026-10-12)
 Idea: draw courses by hand instead of (or alongside) generating them. **Very feasible.** There are two ways to do it, and they can coexist:
 
 **A. Draw in any paint app → import an image** (fastest way to start authoring)
@@ -170,7 +170,11 @@ Idea: draw courses by hand instead of (or alongside) generating them. **Very fea
 - **Challenge a friend**: encode a custom course into a share link. Unranked: the target is in the link, so it's honor-system, which is fine for friends.
 - **Community courses** (much later): a public gallery with moderation, ratings and per-course leaderboards. It needs accounts and moderation, so it isn't v1.
 
-**Suggested order:** daily game first (using a few hand-drawn courses via **A**) → editor **B** → friend-challenge links → community courses.
+**Decision:** build the **in-app editor (B)**. Image import (A) is shelved and could be added later as an extra "import" button in the editor.
+
+**Build order:** core game engine (geometry, LOS, click resolution, rendering) → **editor**, which doubles as the authoring tool for the first dailies → daily mode → solver/par → friend-challenge links → community courses.
+- The editor exports courses in the same JSON puzzle format the daily game consumes, so one data model covers both.
+- Hand-authored dailies need the same secrecy as generated ones (§7.3): **saved courses for upcoming days must not be committed** to the public repo.
 
 ---
 
@@ -218,7 +222,7 @@ src/
 tools/
   generator/  # offline board generation
   solver/     # feasible-set solver, par calculation
-  importer/   # image (PNG) → course polygons (§5.5 A)
+  editor/     # in-app course editor (§5.5)
 puzzles/      # generated daily puzzle data
 ```
 
@@ -235,7 +239,7 @@ puzzles/      # generated daily puzzle data
 7. ~~Leaderboards eventually?~~ **Yes.** Anonymous device ID first, optional accounts later (§7.3).
 8. ~~Visual theme?~~ **Minimal flat**, full-screen canvas + popup cards (§3.7).
 9. ~~Target size?~~ **Constant** for now.
-10. Course editor: start with image import (A), the in-app editor (B), or both? (§5.5)
+10. ~~Course editor approach?~~ **B: in-app editor.**
 
 ---
 
@@ -257,4 +261,5 @@ puzzles/      # generated daily puzzle data
 | 2026-10-12 | No free opening probe; first click is scored | Opening luck is accepted |
 | 2026-10-12 | No ring/shadow overlays to start | Keep the deduction in the player's head |
 | 2026-10-12 | Leaderboard identity: anonymous device ID first, optional accounts later | Per §7.3 |
+| 2026-10-12 | Course authoring via in-app editor (B); image import shelved | Owner's choice; doubles as the daily authoring tool |
 | | | |
