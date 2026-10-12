@@ -101,11 +101,12 @@ function MarkerShape({ result }: { result: CountedClick['result'] }) {
     )
   }
 
-  // Band number is shown inside the dot so color is never the only signal.
+  // Color shows the band; the distance level (1–20) is shown inside the dot,
+  // which is more precise and means color is never the only signal.
   return (
     <g className={`marker marker-band band-${result.band}`}>
       <circle r={MARKER_RADIUS} />
-      <text dy="0.35em">{result.band}</text>
+      <text dy="0.35em">{result.level}</text>
     </g>
   )
 }

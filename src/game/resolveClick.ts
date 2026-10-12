@@ -1,11 +1,11 @@
 import { distance, type Vec } from '../geometry/vec'
 import { isInsideBoard } from './board'
-import { bandForDistance, type BandId } from './bands'
+import { bandForLevel, levelForDistance, type BandId } from './bands'
 import { hasLineOfSight, isPointInAnyWall, type Course } from './course'
 
 export type ClickResult =
   | { kind: 'hit' }
-  | { kind: 'band'; band: BandId }
+  | { kind: 'band'; level: number; band: BandId }
   | { kind: 'grey' }
   | { kind: 'invalid'; reason: 'outside' | 'wall' }
 
@@ -22,5 +22,6 @@ export function resolveClick(course: Course, point: Vec): ClickResult {
   if (d <= radius) return { kind: 'hit' }
 
   if (!hasLineOfSight(point, center, course.walls)) return { kind: 'grey' }
-  return { kind: 'band', band: bandForDistance(d) }
+  const level = levelForDistance(d)
+  return { kind: 'band', level, band: bandForLevel(level) }
 }

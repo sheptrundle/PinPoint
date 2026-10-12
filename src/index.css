@@ -10,7 +10,7 @@
   --grey-marker: #a8a29e;
   --marker-ink: #ffffff;
 
-  /* Distance bands, 1 = hot … 5 = cold */
+  /* Color bands: levels 1–4, 5–8, 9–12, 13–16, 17–20 */
   --band-1: #16a34a;
   --band-2: #84cc16;
   --band-3: #eab308;

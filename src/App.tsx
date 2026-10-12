@@ -49,7 +49,8 @@ export default function App() {
             <h1>PinPoint</h1>
             <p>
               Find the hidden blue circle in as few clicks as possible. Each click shows how close
-              you are (1 = hot, 5 = cold), or turns grey if a wall blocks its view of the circle.
+              you are (1 = closest, 20 = farthest), or turns grey if a wall blocks its view of the
+              circle.
             </p>
             <button onClick={() => setScreen('playing')}>Start</button>
           </div>

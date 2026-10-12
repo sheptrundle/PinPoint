@@ -32,24 +32,25 @@ Core fantasy: *sonar / echolocation / hot-and-cold*, plus some geometric deducti
 
 ## 3. Key Design Problems & Recommendations
 
-### 3.1 Continuous vs. discrete distance feedback  — **[Proposed: discrete bands]**
-If color is a smooth gradient of exact distance, the game breaks:
-- 3 non-collinear colored clicks are enough to trilaterate the exact point, which makes every day a 4-click solve.
+### 3.1 Distance feedback — **Decided: 20 distance levels in 5 color bands** (2026-10-12)
+Why discrete rather than exact distance: if a click reported exact distance (or a smooth color gradient), the game breaks:
+- 3 non-collinear visible clicks are enough to trilaterate the exact point, which makes every day a 4-click solve.
 - Players can read pixel colors with an eyedropper tool to recover exact distances.
 
-**Recommendation:** Use a small number of **discrete bands**, so each click only says "the target is somewhere in this ring":
+So each visible click says "the target is somewhere in this ring." Each click shows a **distance level** (the number on the marker) and a **color** (which group of levels it's in):
 
-| Band | Color | Distance from target center (logical units, board = 1000×1000) |
+| Levels | Color | Distance from target center (board units; board = 1800×1000) |
 |---|---|---|
-| Hot | Green | ≤ 60 |
-| Warm | Yellow-green | 60–150 |
-| Mild | Yellow | 150–300 |
-| Cool | Orange | 300–500 |
-| Cold | Red | > 500 |
+| 1–4 | Green | ≤ 400 |
+| 5–8 | Yellow-green | 400–800 |
+| 9–12 | Yellow | 800–1200 |
+| 13–16 | Orange | 1200–1600 |
+| 17–20 | Red | > 1600 |
 
-- The bands are **non-linear** (narrow near the target, wide far away). Early clicks give coarse info, and the endgame needs precision.
-- The band count and widths are the **#1 tuning knob** for difficulty. They need playtesting.
-- **Decided: 5 bands** (2026-10-12). Colors still read as a green→red scale. Widths above are starting values for playtesting.
+- Each level is **100 units wide** (`LEVEL_WIDTH`), and they're linear, so "level 7" reads directly as "600–700 away". Level 20 also covers everything beyond 1900. A distance exactly on a boundary gets the closer level.
+- The level number gives precision. The color gives an at-a-glance read and the share-card emoji (§6). The number also means color is never the only signal (§3.6).
+- History: started as 5 non-linear bands (≤60 / 150 / 300 / 500 / beyond). The owner switched to 20 levels for more precise feedback.
+- **Tuning knobs:** `LEVEL_WIDTH`, `MAX_LEVEL` and `LEVELS_PER_BAND` in `src/game/bands.ts`. 100-unit rings make trilateration fairly strong, so walls and grey clicks carry most of the difficulty. Widen the levels if solves get too short. On a course this size, most visible clicks are green or yellow-green, and red only shows up across nearly the whole board.
 
 ### 3.2 Line-of-sight definition — **[Proposed]**
 - LOS = the straight segment from the **click point to the target center** doesn't intersect any wall.
@@ -249,7 +250,7 @@ puzzles/      # generated daily puzzle data
 
 ## 8. Open Questions (to resolve together)
 
-1. ~~3 or 5 bands?~~ **5.** Widths still TBD via playtesting.
+1. ~~3 or 5 bands?~~ **5 color bands**, later refined to **20 distance levels** (4 per color, 100 units each).
 2. ~~Free opening probe?~~ **No**, the first click is real.
 3. ~~Misclick protection?~~ **None**, every tap counts.
 4. ~~Click cap?~~ **None** for now.
@@ -286,4 +287,5 @@ puzzles/      # generated daily puzzle data
 | 2026-10-12 | Board fills the screen: 1800×1000 logical board, scaled to cover with a safe area; desktop-first | Owner's priority is monitors; no stretching or letterboxing |
 | 2026-10-12 | Thinner walls: default 8 units (~8 px on a monitor) | Owner's preference |
 | 2026-10-12 | Hosting on a Cloudflare Worker (static assets) instead of Pages | That's what the dashboard set up; Workers can host the API later too |
+| 2026-10-12 | Distance feedback refined to 20 levels of 100 units, 4 levels per color band; markers show the level number | Owner wanted more precise feedback than 1–5 |
 | | | |
